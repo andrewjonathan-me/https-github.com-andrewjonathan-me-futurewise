@@ -13,6 +13,32 @@ FutureWise is a machine-learning-based education platform designed to help high 
 - **Educational News:** Delivers updates on scholarships, education trends, and advancements.
 - **Discussion Forum:** Enables users to post, comment, and interact, with automated moderation to filter inappropriate content.
 
+## Installation and Usage
+```sh
+# 1 Clone the repository
+git clone https://github.com/yourusername/future-wise.git
+# 2 Navigate to the project directory
+cd future-wise
+# 3 Install dependencies
+npm install
+# 4 Run the development server
+npm run dev
+# 5
+Open your browser and visit http://localhost:3000 to explore the platform
+```
+
+## Contribution Guidelines
+We welcome contributions from the community! To get started:
+```sh
+# 1 Fork the repository and create your feature branch
+git checkout -b feature/YourFeatureName
+# 2 Commit your changes
+git commit -m 'Add YourFeatureName'
+# 3 Push to the branch
+git push origin feature/YourFeatureName
+# 4
+Open a pull request and describe your feature in detail.
+```
 ## Team Members
 Kelompok 6 - SOFTWARE ENGINEERING LA-09
 - Andrew Jonathan (2602072262)
