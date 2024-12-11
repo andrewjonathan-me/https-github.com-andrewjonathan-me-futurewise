@@ -12,4 +12,11 @@ FutureWise is a machine-learning-based education platform designed to help high 
 - **Educational Search Engine:** Offers up-to-date information about university majors, scholarships, and research opportunities using external APIs.
 - **Educational News:** Delivers updates on scholarships, education trends, and advancements.
 - **Discussion Forum:** Enables users to post, comment, and interact, with automated moderation to filter inappropriate content.
-"""
+
+##Team Members
+Kelompok 6 - SOFTWARE ENGINEERING LA-09
+- Andrew Jonathan (2602072262)
+- Dian Novilia Putri (2602069753)
+- Felicia Arief Wibowo (2602070566)
+- Vira Fitriyani (2602068706)
+- Yosep Krisna Sugiharto (2602074450)
