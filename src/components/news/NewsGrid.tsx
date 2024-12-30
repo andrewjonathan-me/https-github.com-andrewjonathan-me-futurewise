@@ -1,5 +1,6 @@
 import { NewsCard } from "./NewsCard";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface Article {
   id: string;
@@ -20,6 +21,8 @@ interface NewsGridProps {
 }
 
 export function NewsGrid({ isLoading, news, onSelectArticle }: NewsGridProps) {
+  const { t } = useLanguage();
+
   if (isLoading) {
     return (
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -37,7 +40,7 @@ export function NewsGrid({ isLoading, news, onSelectArticle }: NewsGridProps) {
   if (!news?.length) {
     return (
       <div className="text-center py-12">
-        <p className="text-gray-500">No news matching this category.</p>
+        <p className="text-gray-500">{t('news.noResults')}</p>
       </div>
     );
   }

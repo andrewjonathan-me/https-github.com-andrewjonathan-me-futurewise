@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/table";
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface ReportCard {
   id: string;
@@ -30,6 +31,7 @@ interface PreviousReportCardsProps {
 }
 
 export function PreviousReportCards({ onBack }: PreviousReportCardsProps) {
+  const { t } = useLanguage();
   const [reportCards, setReportCards] = useState<ReportCard[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -57,14 +59,14 @@ export function PreviousReportCards({ onBack }: PreviousReportCardsProps) {
   }, []);
 
   if (loading) {
-    return <div className="text-center p-8">Loading...</div>;
+    return <div className="text-center p-8">{t("common.loading")}</div>;
   }
 
   if (error) {
     return (
       <div className="text-center p-8">
         <p className="text-red-500 mb-4">{error}</p>
-        <Button onClick={onBack}>Back to Menu</Button>
+        <Button onClick={onBack}>{t("report.back.menu")}</Button>
       </div>
     );
   }
@@ -73,7 +75,7 @@ export function PreviousReportCards({ onBack }: PreviousReportCardsProps) {
     return (
       <div className="text-center p-8">
         <p className="mb-4">No previous report card data found.</p>
-        <Button onClick={onBack}>Back to Menu</Button>
+        <Button onClick={onBack}>{t("report.back.menu")}</Button>
       </div>
     );
   }
@@ -81,24 +83,24 @@ export function PreviousReportCards({ onBack }: PreviousReportCardsProps) {
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h2 className="text-xl font-semibold">Previous Report Cards</h2>
-        <Button onClick={onBack}>Back to Menu</Button>
+        <h2 className="text-xl font-semibold">{t("report.view.title")}</h2>
+        <Button onClick={onBack}>{t("report.back.menu")}</Button>
       </div>
 
       <div className="overflow-x-auto">
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Date</TableHead>
-              <TableHead>Mathematics</TableHead>
-              <TableHead>Physics</TableHead>
-              <TableHead>Chemistry</TableHead>
-              <TableHead>Biology</TableHead>
-              <TableHead>Indonesian</TableHead>
-              <TableHead>English</TableHead>
-              <TableHead>History</TableHead>
-              <TableHead>Economics</TableHead>
-              <TableHead>Recommended Major</TableHead>
+              <TableHead>{t("report.table.date")}</TableHead>
+              <TableHead>{t("report.table.mathematics")}</TableHead>
+              <TableHead>{t("report.table.physics")}</TableHead>
+              <TableHead>{t("report.table.chemistry")}</TableHead>
+              <TableHead>{t("report.table.biology")}</TableHead>
+              <TableHead>{t("report.table.indonesian")}</TableHead>
+              <TableHead>{t("report.table.english")}</TableHead>
+              <TableHead>{t("report.table.history")}</TableHead>
+              <TableHead>{t("report.table.economics")}</TableHead>
+              <TableHead>{t("report.table.recommended")}</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>

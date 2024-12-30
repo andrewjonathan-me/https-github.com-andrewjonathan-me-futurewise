@@ -1,4 +1,5 @@
 import { Button } from "@/components/ui/button";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface NewsCategoriesProps {
   selectedCategory: string;
@@ -6,16 +7,18 @@ interface NewsCategoriesProps {
 }
 
 const categories = [
-  { id: "all", label: "Semua" },
-  { id: "General", label: "Umum" },
-  { id: "Beasiswa", label: "Beasiswa" },
-  { id: "Penelitian", label: "Penelitian" },
-  { id: "Jurusan", label: "Jurusan" },
-  { id: "Kampus", label: "Kampus" },
-  { id: "Karir", label: "Karir" },
+  { id: "all", translationKey: "news.categories.all" },
+  { id: "General", translationKey: "news.categories.general" },
+  { id: "Beasiswa", translationKey: "news.categories.scholarship" },
+  { id: "Penelitian", translationKey: "news.categories.research" },
+  { id: "Jurusan", translationKey: "news.categories.major" },
+  { id: "Kampus", translationKey: "news.categories.campus" },
+  { id: "Karir", translationKey: "news.categories.career" },
 ];
 
 export function NewsCategories({ selectedCategory, onSelectCategory }: NewsCategoriesProps) {
+  const { t } = useLanguage();
+
   return (
     <div className="flex flex-wrap gap-2">
       {categories.map(category => (
@@ -25,7 +28,7 @@ export function NewsCategories({ selectedCategory, onSelectCategory }: NewsCateg
           onClick={() => onSelectCategory(category.id)}
           className="transition-colors"
         >
-          {category.label}
+          {t(category.translationKey)}
         </Button>
       ))}
     </div>

@@ -2,6 +2,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Calendar } from "lucide-react";
 import { useState } from "react";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface Article {
   id: string;
@@ -37,13 +38,28 @@ const getCategoryColor = (category: string) => {
   }
 };
 
-const getCategoryDisplay = (category: string) => {
-  if (category === "General") return "Umum";
-  return category;
+const getCategoryTranslationKey = (category: string) => {
+  switch (category) {
+    case "General":
+      return "news.categories.general";
+    case "Beasiswa":
+      return "news.categories.scholarship";
+    case "Penelitian":
+      return "news.categories.research";
+    case "Jurusan":
+      return "news.categories.major";
+    case "Kampus":
+      return "news.categories.campus";
+    case "Karir":
+      return "news.categories.career";
+    default:
+      return "news.categories.general";
+  }
 };
 
 export function NewsCard({ article }: NewsCardProps) {
   const [imageError, setImageError] = useState(false);
+  const { t } = useLanguage();
 
   const handleImageError = () => {
     console.log('Image failed to load:', article.image);
@@ -75,7 +91,7 @@ export function NewsCard({ article }: NewsCardProps) {
             variant="secondary"
             className={`${getCategoryColor(article.category)} transition-colors`}
           >
-            {getCategoryDisplay(article.category)}
+            {t(getCategoryTranslationKey(article.category))}
           </Badge>
           <div className="flex items-center text-sm text-gray-500">
             <Calendar className="w-4 h-4 mr-1" />

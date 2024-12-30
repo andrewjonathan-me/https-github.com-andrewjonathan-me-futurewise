@@ -5,6 +5,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { GradeInputs, subjects } from "./GradeInputs";
 import { calculateRecommendedMajor } from "@/utils/gradeCalculations";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface ReportCardFormProps {
   onBack: () => void;
@@ -15,6 +16,7 @@ interface ReportCardFormProps {
 export function ReportCardForm({ onBack, onSubmitSuccess, initialGrades = {} }: ReportCardFormProps) {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { t } = useLanguage();
   const [grades, setGrades] = useState<Record<string, number | null>>(initialGrades);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -120,9 +122,9 @@ export function ReportCardForm({ onBack, onSubmitSuccess, initialGrades = {} }: 
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h2 className="text-xl font-semibold">Manual Grade Input</h2>
+        <h2 className="text-xl font-semibold">{t("report.manual.input")}</h2>
         <Button onClick={onBack} variant="outline">
-          Back to Menu
+          {t("report.back.menu")}
         </Button>
       </div>
 
@@ -141,7 +143,7 @@ export function ReportCardForm({ onBack, onSubmitSuccess, initialGrades = {} }: 
           className="w-full" 
           disabled={loading || !isFormComplete}
         >
-          {loading ? "Saving..." : "Submit Report Card"}
+          {loading ? t("common.loading") : t("report.submit")}
         </Button>
       </form>
     </div>

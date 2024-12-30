@@ -6,12 +6,14 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Loader2 } from "lucide-react";
 import { processWithAPI, processWithTesseract, parseGrades } from "./OCRProcessing";
 import { ImagePreview } from "./ImagePreview";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface OCRInputProps {
   onResultsDetected: (grades: Record<string, number>) => void;
 }
 
 export function OCRInput({ onResultsDetected }: OCRInputProps) {
+  const { t } = useLanguage();
   const [isProcessing, setIsProcessing] = useState(false);
   const [progress, setProgress] = useState(0);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
@@ -46,11 +48,9 @@ export function OCRInput({ onResultsDetected }: OCRInputProps) {
 
       let text: string;
       try {
-        // Try API first
         text = await processWithAPI(file);
         console.log('API OCR Result:', text);
       } catch (error) {
-        // Fallback to Tesseract
         console.log('Falling back to Tesseract OCR');
         toast({
           title: "Menggunakan metode alternatif",
@@ -100,10 +100,10 @@ export function OCRInput({ onResultsDetected }: OCRInputProps) {
           {isProcessing ? (
             <>
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Memproses...
+              {t("common.loading")}
             </>
           ) : (
-            'Upload Foto Rapor'
+            t("report.ocr.upload")
           )}
         </Button>
 
@@ -113,7 +113,7 @@ export function OCRInput({ onResultsDetected }: OCRInputProps) {
           <div className="w-full space-y-2">
             <Progress value={progress} className="w-full" />
             <p className="text-sm text-center dark:text-gray-400">
-              Memproses gambar... {Math.round(progress)}%
+              {t("common.loading")} {Math.round(progress)}%
             </p>
           </div>
         )}
@@ -121,9 +121,7 @@ export function OCRInput({ onResultsDetected }: OCRInputProps) {
 
       <Alert>
         <AlertDescription>
-          Upload foto rapor Anda untuk mengisi nilai secara otomatis. 
-          Pastikan foto jelas dan nilai terlihat dengan baik. 
-          Anda dapat mengedit hasil secara manual setelah proses selesai.
+          {t("report.ocr.instruction")}
         </AlertDescription>
       </Alert>
     </div>
