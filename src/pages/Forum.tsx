@@ -1,37 +1,42 @@
-import { useState } from "react";
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
-import PostForm from "@/components/forum/PostForm";
-import PostCard from "@/components/forum/PostCard";
-import PaginationControls from "@/components/forum/Pagination";
 import { useForumPosts } from "@/hooks/forum/useForumPosts";
+import { useLanguage } from "@/contexts/LanguageContext";
+import PostCard from "@/components/forum/PostCard";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Button } from "@/components/ui/button";
+import { Plus } from "lucide-react";
 import { useForumActions } from "@/hooks/forum/useForumActions";
-import { filterAndSortPosts } from "@/utils/postFilters";
-import { Post, Attachment } from "@/types/forum";
+import { categoryLanguageMap } from "@/translations/sections/forumCategories";
 
-export default function Forum() {
-  const [selectedCategory, setSelectedCategory] = useState<string>("all");
-  const [sortOption, setSortOption] = useState<string>("newest");
-  const [currentPage, setCurrentPage] = useState(1);
-  const [expandedPosts, setExpandedPosts] = useState<string[]>([]);
+const Forum = () => {
+  const navigate = useNavigate();
+  const [selectedCategory, setSelectedCategory] = useState<string>('all');
+  const [sortBy, setSortBy] = useState<string>('newest');
+  const [expandedPostId, setExpandedPostId] = useState<string | null>(null);
+  const { t, language } = useLanguage();
+  const { addComment, toggleLike } = useForumActions();
+  
+  const { data: posts, isLoading, error } = useForumPosts({
+    category: selectedCategory,
+    sortBy: sortBy as any
+  });
 
-  const { data: posts, isLoading } = useForumPosts();
-  const { createPost, addComment, toggleLike } = useForumActions();
-
-  const categories = [
-    "Umum",
-    "Akademik",
-    "Karir",
-    "Teknologi",
-    "Seni",
-    "Olahraga"
-  ];
-
-  const handleSubmit = (newPost: { title: string; content: string; category: string; attachments: any[] }) => {
-    createPost.mutate(newPost);
+  const handleSortChange = (value: string) => {
+    setSortBy(value);
   };
 
-  const handleComment = (postId: string, content: string, replyToId?: string) => {
+  const handleCategoryChange = (value: string) => {
+    setSelectedCategory(value);
+  };
+
+  const handleToggleExpand = (postId: string) => {
+    setExpandedPostId(expandedPostId === postId ? null : postId);
+  };
+
+  const handleAddComment = (postId: string, content: string, replyToId?: string) => {
     addComment.mutate({ postId, content, replyToId });
   };
 
@@ -39,119 +44,106 @@ export default function Forum() {
     toggleLike.mutate(postId);
   };
 
-  const togglePostExpansion = (postId: string) => {
-    setExpandedPosts(prev =>
-      prev.includes(postId)
-        ? prev.filter(id => id !== postId)
-        : [...prev, postId]
-    );
-  };
-
-  const POSTS_PER_PAGE = 5;
-  const transformedPosts: Post[] = posts ? posts.map(post => ({
-    id: post.id,
-    title: post.title,
-    content: post.content,
-    category: post.category,
-    created_at: post.created_at,
-    updated_at: post.updated_at,
-    user_id: post.user_id,
-    profiles: post.profiles?.[0] || { username: null, avatar_url: null },
-    attachments: post.attachments?.map(attachment => ({
-      ...attachment,
-      type: attachment.type as "image" | "video" | "audio" | "document"
-    })) || [],
-    isLiked: false,
-    likes: 0
-  })) : [];
-  
-  const sortedPosts = filterAndSortPosts(transformedPosts, selectedCategory, sortOption);
-  const totalPages = Math.ceil(sortedPosts.length / POSTS_PER_PAGE);
-  const currentPosts = sortedPosts.slice(
-    (currentPage - 1) * POSTS_PER_PAGE,
-    currentPage * POSTS_PER_PAGE
-  );
-
-  const transformPostForCard = (post: Post) => ({
-    id: post.id,
-    title: post.title,
-    content: post.content,
-    author: post.profiles?.username || 'Anonymous',
-    date: new Date(post.created_at).toLocaleDateString(),
-    category: post.category,
-    likes: post.likes || 0,
-    comments: [], // TODO: Add comments integration
-    attachments: post.attachments || [],
-    isLiked: post.isLiked
-  });
-
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col dark:bg-gray-900">
       <Navbar />
       
-      <main className="flex-grow py-10">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="mb-8">
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Forum Diskusi</h1>
-            <p className="mt-2 text-gray-600 dark:text-gray-300">
-              Diskusikan berbagai topik seputar pendidikan dan karir
-            </p>
-          </div>
-
-          <div className="mb-6 flex flex-wrap gap-4">
-            <select
-              className="border rounded-md p-2 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-200"
-              value={selectedCategory}
-              onChange={(e) => setSelectedCategory(e.target.value)}
+      <main className="flex-grow container mx-auto px-4 py-8">
+        <div className="flex flex-col gap-4 mb-6">
+          <h1 className="text-3xl font-bold dark:text-white">{t("forum.title")}</h1>
+          
+          <div className="flex flex-col sm:flex-row gap-4">
+            <Button 
+              onClick={() => navigate('/create-post')}
+              className="flex items-center justify-center gap-2 h-12 text-base px-6 w-full sm:w-auto"
+              size="lg"
             >
-              <option value="all">Semua Kategori</option>
-              {categories.map(category => (
-                <option key={category} value={category}>{category}</option>
-              ))}
-            </select>
+              <Plus className="w-5 h-5" />
+              {t("forum.createNewPost")}
+            </Button>
 
-            <select
-              className="border rounded-md p-2 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-200"
-              value={sortOption}
-              onChange={(e) => setSortOption(e.target.value)}
-            >
-              <option value="newest">Terbaru</option>
-              <option value="oldest">Terlama</option>
-              <option value="mostLiked">Terbanyak Disukai</option>
-              <option value="leastLiked">Tersedikit Disukai</option>
-            </select>
-          </div>
+            <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto">
+              <Select value={selectedCategory} onValueChange={handleCategoryChange}>
+                <SelectTrigger className="h-12 text-base w-full sm:w-[200px] hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+                  <SelectValue placeholder={t("forum.filter.all")} />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all" className="hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer">
+                    {t("forum.filter.all")}
+                  </SelectItem>
+                  <SelectItem value="general" className="hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer">
+                    {t("forum.categories.general")}
+                  </SelectItem>
+                  <SelectItem value="academic" className="hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer">
+                    {t("forum.categories.academic")}
+                  </SelectItem>
+                  <SelectItem value="career" className="hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer">
+                    {t("forum.categories.career")}
+                  </SelectItem>
+                  <SelectItem value="technology" className="hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer">
+                    {t("forum.categories.technology")}
+                  </SelectItem>
+                </SelectContent>
+              </Select>
 
-          <PostForm onSubmit={handleSubmit} categories={categories} />
-
-          {isLoading ? (
-            <div className="text-center py-8 dark:text-gray-300">Loading...</div>
-          ) : (
-            <div className="space-y-6">
-              {currentPosts.map((post) => (
-                <PostCard
-                  key={post.id}
-                  post={transformPostForCard(post)}
-                  onAddComment={handleComment}
-                  onToggleLike={handleToggleLike}
-                  isExpanded={expandedPosts.includes(post.id)}
-                  onToggleExpand={togglePostExpansion}
-                />
-              ))}
+              <Select value={sortBy} onValueChange={handleSortChange}>
+                <SelectTrigger className="h-12 text-base w-full sm:w-[200px] hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+                  <SelectValue placeholder={t("forum.sort.newest")} />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="newest" className="hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer">
+                    {t("forum.sort.newest")}
+                  </SelectItem>
+                  <SelectItem value="oldest" className="hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer">
+                    {t("forum.sort.oldest")}
+                  </SelectItem>
+                  <SelectItem value="mostLiked" className="hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer">
+                    {t("forum.sort.mostLiked")}
+                  </SelectItem>
+                  <SelectItem value="leastLiked" className="hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer">
+                    {t("forum.sort.leastLiked")}
+                  </SelectItem>
+                </SelectContent>
+              </Select>
             </div>
-          )}
-
-          {totalPages > 1 && (
-            <PaginationControls
-              currentPage={currentPage}
-              totalPages={totalPages}
-              onPageChange={setCurrentPage}
-            />
-          )}
+          </div>
         </div>
+
+        {isLoading ? (
+          <div className="flex justify-center items-center h-64">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 dark:border-white"></div>
+          </div>
+        ) : error ? (
+          <div className="text-red-500 text-center dark:text-red-400">
+            {t("error.loading")}
+          </div>
+        ) : (
+          <div className="space-y-6">
+            {posts?.map((post) => (
+              <PostCard
+                key={post.id}
+                post={{
+                  ...post,
+                  author: post.profiles?.username || 'Anonymous',
+                  date: new Date(post.created_at).toLocaleDateString(),
+                  comments: [],
+                  attachments: post.attachments || [],
+                  likes: post.likes || 0,
+                  isLiked: post.isLiked || false,
+                }}
+                onAddComment={handleAddComment}
+                onToggleLike={handleToggleLike}
+                isExpanded={expandedPostId === post.id}
+                onToggleExpand={() => handleToggleExpand(post.id)}
+              />
+            ))}
+          </div>
+        )}
       </main>
 
       <Footer />
     </div>
   );
-}
+};
+
+export default Forum;

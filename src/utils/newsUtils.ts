@@ -1,4 +1,3 @@
-// Assign categories based on keywords in title and content
 export const assignCategory = (title: string, content?: string) => {
   const searchText = (title + ' ' + (content || '')).toLowerCase();
   console.log('Categorizing article:', { title, content: content?.substring(0, 100) });
@@ -66,4 +65,17 @@ export const filterNewsByCategory = (news: any[], selectedCategory: string) => {
   console.log(`Found ${filteredNews.length} articles for category ${selectedCategory}`);
   
   return filteredNews;
+};
+
+// Add new function to filter out specific articles
+export const filterOutSpecificArticles = (articles: any[]) => {
+  const excludedTitles = [
+    "Adu Silsilah Thariq Halilintar dan Aisar Khaled Pria yang Dekat dengan Fuji, Lebih Mentereng Mana?"
+  ];
+  
+  return articles.filter(article => 
+    !excludedTitles.some(title => 
+      article.title.toLowerCase().includes(title.toLowerCase())
+    )
+  );
 };

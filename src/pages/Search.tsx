@@ -10,6 +10,8 @@ import { Search as SearchIcon } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import PaginationControls from "@/components/forum/Pagination";
 import { format } from "date-fns";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface SearchResult {
   id?: string;
@@ -23,15 +25,24 @@ interface SearchResult {
 }
 
 export default function Search() {
+  const { t, language } = useLanguage();
   const [searchQuery, setSearchQuery] = useState("");
   const [debouncedQuery, setDebouncedQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
+  const [isSearching, setIsSearching] = useState(false);
+  const isMobile = useIsMobile();
   const resultsPerPage = 5;
+
+  const getMobilePlaceholder = () => {
+    return language === 'en' ? "Search for majors..." : "Cari jurusan...";
+  };
 
   const handleSearch = () => {
     console.log("Searching for:", searchQuery);
     setDebouncedQuery(searchQuery);
-    setCurrentPage(1); // Reset to first page on new search
+    setCurrentPage(1);
+    setIsSearching(true);
+    setTimeout(() => setIsSearching(false), 200);
   };
 
   const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -89,25 +100,27 @@ export default function Search() {
       
       <main className="flex-grow container mx-auto px-4 py-8 flex flex-col items-center justify-start">
         <div className="w-full max-w-6xl mx-auto flex flex-col items-center">
-          <h1 className="text-3xl font-bold mb-12 text-center dark:text-white">Cari Informasi</h1>
+          <h1 className="text-3xl font-bold mb-12 text-center dark:text-white">
+            {t("search.title")}
+          </h1>
           
           <div className="w-full mb-12">
             <div className="relative flex items-center justify-center">
               <div className="relative w-full max-w-4xl">
                 <Input
                   type="text"
-                  placeholder="Masukkan kata kunci pencarian..."
+                  placeholder={isMobile ? getMobilePlaceholder() : t("search.placeholder")}
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   onKeyPress={handleKeyPress}
-                  className="w-full pl-8 pr-36 py-7 text-lg rounded-full border-2 focus-visible:ring-primary focus-visible:border-primary h-auto dark:bg-gray-800 dark:text-white dark:border-gray-700"
+                  className="w-full pl-4 pr-20 py-2 text-base rounded-full border-2 focus-visible:ring-primary focus-visible:border-primary h-auto dark:bg-gray-800 dark:text-white dark:border-gray-700 md:pl-8 md:pr-36 md:py-7 md:text-lg"
                 />
                 <Button 
                   onClick={handleSearch} 
-                  className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full px-8 py-6 text-base"
+                  variant="ghost"
+                  className={`absolute right-1 top-1/2 -translate-y-1/2 rounded-full p-2 md:p-4 transition-colors hover:text-primary active:text-primary-600 ${isSearching ? 'text-primary' : ''}`}
                 >
-                  <SearchIcon className="w-5 h-5" />
-                  <span className="ml-2">Cari</span>
+                  <SearchIcon className="size-[18px] md:size-[22px]" />
                 </Button>
               </div>
             </div>
@@ -158,11 +171,11 @@ export default function Search() {
               </>
             ) : debouncedQuery ? (
               <div className="text-center py-12 text-gray-500 dark:text-gray-400">
-                Tidak ada informasi yang ditemukan.
+                {t("search.noResults")}
               </div>
             ) : (
               <div className="text-center py-12 text-gray-500 dark:text-gray-400">
-                Mulai mencari informasi dengan memasukkan kata kunci di atas.
+                {t("search.start")}
               </div>
             )}
           </div>

@@ -7,50 +7,75 @@ import { questions } from "@/data/testQuestions";
 import { TestContent } from "@/components/test/TestContent";
 import { TestCompletion } from "@/components/test/TestCompletion";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { calculateCategoryScores } from "@/utils/answerMappings";
+import { TestQuestion } from "@/data/testQuestions/types";
+import { calculateCategoryPercentage } from "@/utils/testCalculations";
 
-interface Answer {
-  answer: string;
-  questionId: number;
-}
-
-export default function Test() {
+export default function TestIndonesian() {
   const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [answers, setAnswers] = useState<Record<number, Answer>>({});
+  const [answers, setAnswers] = useState<Record<number, { answer: string; questionId: number }>>({});
   const [showSaveButton, setShowSaveButton] = useState(false);
   const [result, setResult] = useState<{ teknik: number; seni: number; sains: number; sosial: number } | null>(null);
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { t, language } = useLanguage();
+  const { t } = useLanguage();
 
   const handleAnswer = (answer: string, questionId: number) => {
-    console.log("Selected answer:", { answer, questionId });
     setAnswers((prev) => ({
       ...prev,
       [currentQuestion]: { answer, questionId }
     }));
   };
 
-  const calculateResult = (answers: Record<number, Answer>) => {
-    console.log("Calculating results for language:", language);
-    console.log("Answers with question IDs:", answers);
-    
-    // Convert answers to format expected by calculateCategoryScores
-    const formattedAnswers: Record<number, string> = {};
-    Object.entries(answers).forEach(([index, answerData]) => {
-      formattedAnswers[answerData.questionId - 1] = answerData.answer;
+  const calculateResult = (answers: Record<number, { answer: string; questionId: number }>) => {
+    const categories = {
+      teknik: 0,
+      seni: 0,
+      sains: 0,
+      sosial: 0
+    };
+
+    Object.entries(answers).forEach(([questionIndex, answerData]) => {
+      const questionData = questions[Number(questionIndex)] as TestQuestion;
+      const options = questionData.options.id;
+
+      if (!options || !Array.isArray(options)) {
+        console.error("Invalid options for question", questionIndex);
+        return;
+      }
+
+      const optionIndex = options.indexOf(answerData.answer);
+
+      switch (optionIndex) {
+        case 0:
+          categories.teknik += 1;
+          break;
+        case 1:
+          categories.seni += 1;
+          break;
+        case 2:
+          categories.sains += 1;
+          break;
+        case 3:
+          categories.sosial += 1;
+          break;
+        default:
+          console.error("Invalid option index:", optionIndex);
+      }
     });
-    
-    return calculateCategoryScores(formattedAnswers, language);
+
+    return {
+      teknik: calculateCategoryPercentage(categories.teknik),
+      seni: calculateCategoryPercentage(categories.seni),
+      sains: calculateCategoryPercentage(categories.sains),
+      sosial: calculateCategoryPercentage(categories.sosial)
+    };
   };
 
   const saveResults = async () => {
     try {
-      console.log("Starting to save test results...");
       const { data: { user }, error: userError } = await supabase.auth.getUser();
       
       if (userError) {
-        console.error('Error getting user:', userError);
         toast({
           title: t("common.error"),
           description: t("test.errors.auth"),
@@ -60,7 +85,6 @@ export default function Test() {
       }
 
       if (!user) {
-        console.error('No authenticated user found');
         toast({
           title: t("common.error"),
           description: t("test.errors.auth"),
@@ -70,7 +94,6 @@ export default function Test() {
       }
 
       if (!result) {
-        console.error('No test result to save');
         toast({
           title: t("common.error"),
           description: t("test.errors.noResult"),
@@ -79,7 +102,6 @@ export default function Test() {
         return false;
       }
 
-      console.log("Attempting to save results for user:", user.id);
       const { error: insertError } = await supabase
         .from('test_results')
         .insert([{ 
@@ -89,7 +111,6 @@ export default function Test() {
         }]);
 
       if (insertError) {
-        console.error('Error saving test results:', insertError);
         toast({
           title: t("common.error"),
           description: t("test.errors.save") + insertError.message,
@@ -98,7 +119,6 @@ export default function Test() {
         return false;
       }
 
-      console.log("Test results saved successfully");
       toast({
         title: t("common.success"),
         description: t("test.success.save"),
@@ -107,7 +127,6 @@ export default function Test() {
       navigate("/results", { state: { result, answers } });
       return true;
     } catch (error) {
-      console.error('Unexpected error saving test results:', error);
       toast({
         title: t("common.error"),
         description: t("test.errors.unexpected"),
@@ -131,7 +150,6 @@ export default function Test() {
       setCurrentQuestion((prev) => prev + 1);
     } else {
       const calculatedResult = calculateResult(answers);
-      console.log("Calculated result:", calculatedResult);
       setResult(calculatedResult);
       setShowSaveButton(true);
     }
@@ -160,6 +178,7 @@ export default function Test() {
                 onAnswer={handleAnswer}
                 onPrevious={handlePrevious}
                 onNext={handleNext}
+                forcedLanguage="id"
               />
             ) : (
               <TestCompletion onSave={saveResults} />

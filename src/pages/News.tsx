@@ -3,13 +3,14 @@ import { useQuery } from "@tanstack/react-query";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { NewsCategories } from "@/components/news/NewsCategories";
+import { NewsGrid } from "@/components/news/NewsGrid";
+import { NewsHeader } from "@/components/news/NewsHeader";
 import { useToast } from "@/components/ui/use-toast";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { RefreshCw } from "lucide-react";
+import { Button } from "@/components/ui/button"; // Added this import
 import { supabase } from "@/integrations/supabase/client";
-import { assignCategory, filterNewsByCategory } from "@/utils/newsUtils";
-import { NewsGrid } from "@/components/news/NewsGrid";
+import { assignCategory, filterNewsByCategory, filterOutSpecificArticles } from "@/utils/newsUtils";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface Article {
   id: string;
@@ -53,53 +54,20 @@ const fetchNews = async (): Promise<Article[]> => {
       };
     });
 
-    console.log("Processed news articles:", processedNews);
-    return processedNews;
+    const filteredNews = filterOutSpecificArticles(processedNews);
+    console.log("Processed and filtered news articles:", filteredNews);
+    return filteredNews;
   } catch (error) {
     console.error("Error fetching news:", error);
-    // Return mock data as fallback
-    return mockNews;
+    return [];
   }
 };
-
-// Mock data as fallback
-const mockNews = [
-  {
-    id: "1",
-    title: "Beasiswa S2 Dalam Negeri 2024 Telah Dibuka",
-    category: "Beasiswa",
-    image: "https://source.unsplash.com/random/800x600/?university",
-    summary: "Program beasiswa magister untuk universitas dalam negeri tahun 2024 telah dibuka dengan kuota lebih besar.",
-    date: "2024-03-10",
-    source: "Kemendikbud",
-    content: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.",
-  },
-  {
-    id: "2",
-    title: "Fakultas Kedokteran UI Rilis Penelitian Breakthrough",
-    category: "Penelitian",
-    image: "https://source.unsplash.com/random/800x600/?medical",
-    summary: "Tim peneliti dari Fakultas Kedokteran Universitas Indonesia berhasil mengembangkan metode baru dalam penanganan diabetes.",
-    date: "2024-03-09",
-    source: "UI News",
-    content: "Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.",
-  },
-  {
-    id: "3",
-    title: "Program Studi Digital Business Semakin Diminati",
-    category: "Jurusan",
-    image: "https://source.unsplash.com/random/800x600/?business",
-    summary: "Tren peminatan jurusan di 2024 menunjukkan peningkatan signifikan pada program studi terkait bisnis digital.",
-    date: "2024-03-08",
-    source: "Kompas Edu",
-    content: "Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo.",
-  },
-];
 
 export default function News() {
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [selectedArticle, setSelectedArticle] = useState<Article | null>(null);
   const { toast } = useToast();
+  const { t } = useLanguage();
   
   const { data: news, isLoading, error, refetch } = useQuery({
     queryKey: ["news"],
@@ -122,15 +90,8 @@ export default function News() {
 
   // Function to clean and truncate content
   const formatContent = (text: string) => {
-    // Remove the [+XXXX chars] pattern from the end of the text
     const cleanText = text.replace(/\s*\[\+\d+\s*chars\]\s*$/, '');
-    
-    // If the text was truncated (had the pattern removed), add ellipsis
-    if (cleanText.length < text.length) {
-      return `${cleanText}...`;
-    }
-    
-    return cleanText;
+    return cleanText.length < text.length ? `${cleanText}...` : cleanText;
   };
 
   return (
@@ -138,17 +99,7 @@ export default function News() {
       <Navbar />
       
       <main className="flex-grow container mx-auto px-4 py-8">
-        <div className="flex justify-between items-center mb-8">
-          <h1 className="text-3xl font-bold dark:text-white">Berita Pendidikan</h1>
-          <Button
-            onClick={() => refetch()}
-            variant="outline"
-            className="flex items-center gap-2 dark:bg-gray-800 dark:text-white dark:hover:bg-gray-700"
-          >
-            <RefreshCw className="w-4 h-4" />
-            Refresh
-          </Button>
-        </div>
+        <NewsHeader onRefresh={refetch} />
         
         <NewsCategories 
           selectedCategory={selectedCategory}
@@ -168,7 +119,9 @@ export default function News() {
         <DialogContent className="w-[90vw] max-w-2xl mx-auto h-auto max-h-[90vh] overflow-y-auto dark:bg-gray-800 sm:w-[85vw] md:w-[75vw]">
           {selectedArticle && (
             <div className="space-y-4">
-              <h2 className="text-xl sm:text-2xl font-bold dark:text-white">{selectedArticle.title}</h2>
+              <h2 className="text-xl sm:text-2xl font-bold dark:text-white">
+                {selectedArticle.title}
+              </h2>
               <div className="aspect-video relative overflow-hidden rounded-lg">
                 <img
                   src={selectedArticle.image}

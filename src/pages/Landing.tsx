@@ -2,8 +2,11 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 export default function Landing() {
+  const { t } = useLanguage();
+
   return (
     <div className="min-h-screen flex flex-col dark:bg-slate-900">
       <Navbar />
@@ -14,17 +17,17 @@ export default function Landing() {
           <div className="max-w-7xl mx-auto pt-20 pb-16 px-4 sm:px-6 lg:px-8 lg:pt-28">
             <div className="text-center">
               <h1 className="text-4xl tracking-tight font-extrabold text-gray-900 dark:text-white sm:text-5xl md:text-6xl">
-                <span className="block">Temukan Potensi</span>
-                <span className="block text-primary">Raih Masa Depan</span>
+                <span className="block">{t("landing.hero.title1")}</span>
+                <span className="block text-primary">{t("landing.hero.title2")}</span>
               </h1>
               <p className="mt-3 max-w-md mx-auto text-base text-gray-500 dark:text-gray-300 sm:text-lg md:mt-5 md:text-xl md:max-w-3xl">
-                Platform edukasi berbasis AI yang membantu siswa SMA/K menemukan jurusan dan universitas yang tepat sesuai dengan minat dan bakatnya.
+                {t("landing.hero.subtitle")}
               </p>
               <div className="mt-5 max-w-md mx-auto sm:flex sm:justify-center md:mt-8">
                 <div className="rounded-md shadow">
                   <Link to="/auth/register">
                     <Button size="lg" className="w-full">
-                      Mulai Sekarang
+                      {t("landing.hero.cta")}
                     </Button>
                   </Link>
                 </div>
@@ -38,10 +41,10 @@ export default function Landing() {
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center">
               <h2 className="text-3xl font-extrabold text-gray-900 dark:text-white">
-                Fitur Unggulan
+                {t("landing.features.title")}
               </h2>
               <p className="mt-4 text-lg text-gray-600 dark:text-gray-300">
-                Solusi lengkap untuk masa depan pendidikanmu
+                {t("landing.features.subtitle")}
               </p>
             </div>
 
@@ -53,10 +56,10 @@ export default function Landing() {
                 >
                   <div className="text-primary mb-4">{feature.icon}</div>
                   <h3 className="text-lg font-medium text-gray-900 dark:text-white">
-                    {feature.title}
+                    {t(feature.title)}
                   </h3>
                   <p className="mt-2 text-base text-gray-500 dark:text-gray-300">
-                    {feature.description}
+                    {t(feature.description)}
                   </p>
                 </div>
               ))}
@@ -72,8 +75,8 @@ export default function Landing() {
 
 const features = [
   {
-    title: "Tes Minat & Bakat",
-    description: "Temukan potensi terbaikmu melalui tes yang dirancang khusus dengan teknologi AI.",
+    title: "landing.features.test.title",
+    description: "landing.features.test.description",
     icon: (
       <svg
         className="h-6 w-6"
@@ -91,8 +94,8 @@ const features = [
     ),
   },
   {
-    title: "Analisis Nilai Rapor",
-    description: "Upload nilai rapor dan dapatkan rekomendasi jurusan yang sesuai dengan kemampuanmu.",
+    title: "landing.features.report.title",
+    description: "landing.features.report.description",
     icon: (
       <svg
         className="h-6 w-6"
@@ -110,8 +113,8 @@ const features = [
     ),
   },
   {
-    title: "Forum Diskusi",
-    description: "Diskusikan pengalaman dan dapatkan insight dari siswa lain dan para ahli.",
+    title: "landing.features.forum.title",
+    description: "landing.features.forum.description",
     icon: (
       <svg
         className="h-6 w-6"

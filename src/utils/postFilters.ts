@@ -1,34 +1,37 @@
-import { Post } from '../types/forum';
+import { Post } from "@/types/forum";
+import { categoryLanguageMap } from "@/translations/sections/forumCategories";
 
 export const filterAndSortPosts = (
   posts: Post[],
   selectedCategory: string,
   sortOption: string
-): Post[] => {
-  console.log('Filtering posts with option:', sortOption);
-  
-  let filteredPosts = selectedCategory === "all" 
-    ? posts 
-    : posts.filter(post => post.category === selectedCategory);
+) => {
+  let filteredPosts = [...posts];
 
-  return filteredPosts.sort((a, b) => {
-    switch (sortOption) {
-      case "newest":
-        return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
-      case "oldest":
-        return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
-      case "mostLiked":
-        const bLikes = (b.likes || 0) + (b.isLiked ? 1 : 0);
-        const aLikes = (a.likes || 0) + (a.isLiked ? 1 : 0);
-        console.log(`Comparing likes: Post ${b.id}(${bLikes}) vs Post ${a.id}(${aLikes})`);
-        return bLikes - aLikes;
-      case "leastLiked":
-        const bLikesAsc = (b.likes || 0) + (b.isLiked ? 1 : 0);
-        const aLikesAsc = (a.likes || 0) + (a.isLiked ? 1 : 0);
-        console.log(`Comparing likes (ascending): Post ${a.id}(${aLikesAsc}) vs Post ${b.id}(${bLikesAsc})`);
-        return aLikesAsc - bLikesAsc;
-      default:
-        return 0;
-    }
-  });
+  // Filter by category
+  if (selectedCategory !== "all") {
+    filteredPosts = filteredPosts.filter((post) => {
+      // Check if the post category matches either the English or Indonesian version
+      const englishCategory = categoryLanguageMap[post.category as keyof typeof categoryLanguageMap] || post.category;
+      return post.category === selectedCategory || englishCategory === selectedCategory;
+    });
+  }
+
+  // Sort posts
+  switch (sortOption) {
+    case "newest":
+      return filteredPosts.sort(
+        (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+      );
+    case "oldest":
+      return filteredPosts.sort(
+        (a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+      );
+    case "mostLiked":
+      return filteredPosts.sort((a, b) => (b.likes || 0) - (a.likes || 0));
+    case "leastLiked":
+      return filteredPosts.sort((a, b) => (a.likes || 0) - (b.likes || 0));
+    default:
+      return filteredPosts;
+  }
 };

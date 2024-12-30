@@ -4,9 +4,11 @@ import { Footer } from "@/components/layout/Footer";
 import { X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ContactForm } from "@/components/contact/ContactForm";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 export default function Contact() {
   const navigate = useNavigate();
+  const { t } = useLanguage();
 
   const handleCancel = () => {
     navigate(-1);
@@ -27,7 +29,9 @@ export default function Contact() {
             <X className="h-6 w-6" />
           </Button>
 
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-8">Hubungi Kami</h1>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-8">
+            {t("contact.title")}
+          </h1>
           
           <ContactForm />
         </div>

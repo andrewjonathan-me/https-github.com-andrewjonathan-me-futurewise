@@ -10,3 +10,5 @@ export interface TestResult {
   score?: number;
   recommendations?: string[];
 }
+
+export type CategoryType = 'teknik' | 'seni' | 'sains' | 'sosial';
