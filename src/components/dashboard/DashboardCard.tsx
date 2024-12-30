@@ -19,7 +19,7 @@ export function DashboardCard({
   return (
     <Card
       className={cn(
-        "p-6 hover:shadow-lg transition-shadow cursor-pointer dark:bg-gray-800",
+        "p-6 hover:shadow-lg transition-shadow cursor-pointer bg-gray-50 dark:bg-gray-700 h-[160px]",
         className
       )}
       onClick={onClick}
@@ -30,7 +30,7 @@ export function DashboardCard({
         </div>
         <div>
           <h3 className="font-semibold text-lg text-gray-900 dark:text-white">{title}</h3>
-          <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">{description}</p>
+          <p className="text-sm text-gray-600 dark:text-gray-300 mt-1 line-clamp-2">{description}</p>
         </div>
       </div>
     </Card>

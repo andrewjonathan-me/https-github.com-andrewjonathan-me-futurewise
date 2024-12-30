@@ -6,13 +6,17 @@ interface TruncatedContentProps {
   maxWords: number;
   isExpanded?: boolean;
   onToggle?: () => void;
+  readMoreText?: string;
+  showLessText?: string;
 }
 
 const TruncatedContent: React.FC<TruncatedContentProps> = ({ 
   content, 
   maxWords,
   isExpanded = false,
-  onToggle
+  onToggle,
+  readMoreText = "Read More",
+  showLessText = "Show Less"
 }) => {
   const words = content.split(' ');
   const shouldTruncate = words.length > maxWords;
@@ -30,11 +34,11 @@ const TruncatedContent: React.FC<TruncatedContentProps> = ({
         >
           {isExpanded ? (
             <>
-              Show Less <ChevronUp className="w-4 h-4" />
+              {showLessText} <ChevronUp className="w-4 h-4" />
             </>
           ) : (
             <>
-              Read More <ChevronDown className="w-4 h-4" />
+              {readMoreText} <ChevronDown className="w-4 h-4" />
             </>
           )}
         </button>

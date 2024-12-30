@@ -6,6 +6,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/components/ui/use-toast";
 import FileUpload from './FileUpload';
 import AttachmentPreview from './AttachmentPreview';
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface Attachment {
   type: 'image' | 'video' | 'audio' | 'document';
@@ -21,16 +22,22 @@ interface PostFormProps {
 const MAX_TITLE_CHARS = 30;
 
 const PostForm: React.FC<PostFormProps> = ({ onSubmit, categories }) => {
-  const [newPost, setNewPost] = useState({ title: "", content: "", category: "Umum", attachments: [] as Attachment[] });
+  const [newPost, setNewPost] = useState({ 
+    title: "", 
+    content: "", 
+    category: categories[0] || "General", 
+    attachments: [] as Attachment[] 
+  });
   const { toast } = useToast();
   const fileInputRefs = useRef<{ [key: string]: HTMLInputElement | null }>({});
+  const { t } = useLanguage();
 
   const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     if (value.length > MAX_TITLE_CHARS) {
       toast({
-        title: "Peringatan",
-        description: `Judul tidak boleh lebih dari ${MAX_TITLE_CHARS} karakter`,
+        title: t("postForm.warning.title"),
+        description: t("postForm.warning.titleLength").replace("{0}", MAX_TITLE_CHARS.toString()),
         variant: "destructive",
       });
       return;
@@ -76,8 +83,8 @@ const PostForm: React.FC<PostFormProps> = ({ onSubmit, categories }) => {
     e.preventDefault();
     if (!newPost.title.trim() || !newPost.content.trim()) {
       toast({
-        title: "Peringatan",
-        description: "Judul dan isi postingan harus diisi",
+        title: t("postForm.warning.title"),
+        description: t("postForm.warning.required"),
         variant: "destructive"
       });
       return;
@@ -85,16 +92,15 @@ const PostForm: React.FC<PostFormProps> = ({ onSubmit, categories }) => {
     
     if (newPost.title.length > MAX_TITLE_CHARS) {
       toast({
-        title: "Peringatan",
-        description: `Judul tidak boleh lebih dari ${MAX_TITLE_CHARS} karakter`,
+        title: t("postForm.warning.title"),
+        description: t("postForm.warning.titleLength").replace("{0}", MAX_TITLE_CHARS.toString()),
         variant: "destructive"
       });
       return;
     }
     
     onSubmit(newPost);
-    setNewPost({ title: "", content: "", category: "Umum", attachments: [] });
-    // Reset all file inputs
+    setNewPost({ title: "", content: "", category: categories[0] || "General", attachments: [] });
     Object.values(fileInputRefs.current).forEach(input => {
       if (input) input.value = '';
     });
@@ -103,28 +109,28 @@ const PostForm: React.FC<PostFormProps> = ({ onSubmit, categories }) => {
   return (
     <Card className="mb-8">
       <CardHeader>
-        <CardTitle>Buat Postingan Baru</CardTitle>
+        <CardTitle>{t("forum.newPost")}</CardTitle>
         <CardDescription>
-          Bagikan pertanyaan atau pengalaman Anda
+          {t("forum.description")}
         </CardDescription>
       </CardHeader>
       <form onSubmit={handleSubmit}>
         <CardContent className="space-y-4">
           <div className="relative">
             <Input
-              placeholder="Judul postingan"
+              placeholder={t("postForm.input.title")}
               value={newPost.title}
               onChange={handleTitleChange}
               className="w-full"
               maxLength={MAX_TITLE_CHARS}
             />
             <div className="text-xs text-gray-500 mt-1 flex justify-between">
-              <span>Karakter: {newPost.title.length}/{MAX_TITLE_CHARS}</span>
+              <span>{t("postForm.characters")}: {newPost.title.length}/{MAX_TITLE_CHARS}</span>
             </div>
           </div>
           <div className="relative">
             <Textarea
-              placeholder="Isi postingan"
+              placeholder={t("postForm.input.content")}
               value={newPost.content}
               onChange={(e) =>
                 setNewPost({ ...newPost, content: e.target.value })
@@ -164,7 +170,7 @@ const PostForm: React.FC<PostFormProps> = ({ onSubmit, categories }) => {
           )}
         </CardContent>
         <CardFooter>
-          <Button type="submit">Posting</Button>
+          <Button type="submit">{t("postForm.button.submit")}</Button>
         </CardFooter>
       </form>
     </Card>

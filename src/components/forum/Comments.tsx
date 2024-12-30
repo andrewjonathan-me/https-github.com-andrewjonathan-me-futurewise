@@ -1,11 +1,8 @@
 import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { MessageCircle } from "lucide-react";
-import { useToast } from "@/components/ui/use-toast";
-import TruncatedContent from './TruncatedContent';
+import CommentItem from './CommentItem';
 import { supabase } from "@/integrations/supabase/client";
-import CommentActions from './CommentActions';
-import { useCurrentUser } from '@/hooks/useCurrentUser';
 
 interface Reply {
   id: string;
@@ -33,7 +30,7 @@ interface CommentsProps {
 }
 
 const Comments: React.FC<CommentsProps> = ({
-  comments,
+  comments = [], // Provide default empty array
   postId,
   onAddComment,
 }) => {
@@ -42,10 +39,8 @@ const Comments: React.FC<CommentsProps> = ({
   const [replyingTo, setReplyingTo] = useState<string | null>(null);
   const [likedComments, setLikedComments] = useState<string[]>([]);
   const [expandedComments, setExpandedComments] = useState<string[]>([]);
-  const { toast } = useToast();
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
 
-  // Use useEffect to handle the async currentUserId
   React.useEffect(() => {
     const fetchCurrentUser = async () => {
       const { data: { user } } = await supabase.auth.getUser();
@@ -55,51 +50,11 @@ const Comments: React.FC<CommentsProps> = ({
   }, []);
 
   const handleLikeComment = (commentId: string) => {
-    const isLiked = likedComments.includes(commentId);
     setLikedComments(prev => 
-      isLiked 
+      prev.includes(commentId) 
         ? prev.filter(id => id !== commentId)
         : [...prev, commentId]
     );
-    
-    toast({
-      title: isLiked ? "Removed like" : "Added like",
-      description: "Your reaction has been updated",
-    });
-  };
-
-  const handleDeleteComment = async (commentId: string) => {
-    try {
-      console.log("Deleting comment:", commentId);
-      const { error } = await supabase
-        .from('forum_comments')
-        .delete()
-        .eq('id', commentId);
-
-      if (error) {
-        console.error("Error deleting comment:", error);
-        toast({
-          title: "Error",
-          description: "Failed to delete comment",
-          variant: "destructive",
-        });
-        return;
-      }
-
-      toast({
-        title: "Success",
-        description: "Comment deleted successfully",
-      });
-
-      window.location.reload();
-    } catch (error) {
-      console.error("Error in handleDeleteComment:", error);
-      toast({
-        title: "Error",
-        description: "Failed to delete comment",
-        variant: "destructive",
-      });
-    }
   };
 
   const handleReply = (commentId: string) => {
@@ -134,70 +89,63 @@ const Comments: React.FC<CommentsProps> = ({
       {isExpanded && (
         <div className="space-y-2">
           {comments.map((comment) => (
-            <div key={comment.id} className="bg-gray-50 dark:bg-gray-800 p-3 rounded-lg">
-              <TruncatedContent 
-                content={comment.content} 
-                maxWords={20} 
+            <React.Fragment key={comment.id}>
+              <CommentItem
+                comment={comment}
                 isExpanded={expandedComments.includes(comment.id)}
-                onToggle={() => toggleCommentExpansion(comment.id)}
+                onToggleExpand={() => toggleCommentExpansion(comment.id)}
+                currentUserId={currentUserId}
+                isLiked={likedComments.includes(comment.id)}
+                onLike={handleLikeComment}
+                onReply={() => setReplyingTo(replyingTo === comment.id ? null : comment.id)}
+                onDelete={async (id) => {
+                  const { error } = await supabase
+                    .from('forum_comments')
+                    .delete()
+                    .eq('id', id);
+                  if (!error) {
+                    window.location.reload();
+                  }
+                }}
+                replyingTo={replyingTo}
+                replyContent={replyContent[comment.id] || ""}
+                onReplyContentChange={(content) => setReplyContent(prev => ({
+                  ...prev,
+                  [comment.id]: content
+                }))}
+                onSubmitReply={() => handleReply(comment.id)}
               />
-              <div className="flex items-center justify-between mt-2">
-                <div className="text-xs text-gray-500 dark:text-gray-400">
-                  {comment.author} - {comment.date}
-                </div>
-                <CommentActions
-                  id={comment.id}
-                  likes={comment.likes}
-                  isLiked={likedComments.includes(comment.id)}
-                  userId={comment.user_id}
-                  currentUserId={currentUserId}
-                  onLike={handleLikeComment}
-                  onReply={() => setReplyingTo(replyingTo === comment.id ? null : comment.id)}
-                  onDelete={handleDeleteComment}
-                />
-              </div>
-
-              {replyingTo === comment.id && (
-                <div className="mt-2 flex gap-2">
-                  <input
-                    placeholder="Write a reply..."
-                    value={replyContent[comment.id] || ""}
-                    onChange={(e) => setReplyContent(prev => ({
-                      ...prev,
-                      [comment.id]: e.target.value
-                    }))}
-                    className="flex-1 rounded-md border p-2 text-sm dark:bg-gray-700 dark:text-white dark:border-gray-600"
-                  />
-                  <Button size="sm" onClick={() => handleReply(comment.id)}>
-                    Reply
-                  </Button>
-                </div>
-              )}
 
               {comment.replies?.length > 0 && (
                 <div className="ml-4 mt-2 space-y-2">
                   {comment.replies.map((reply) => (
-                    <div key={reply.id} className="bg-gray-100 dark:bg-gray-700 p-2 rounded-lg">
-                      <TruncatedContent content={reply.content} maxWords={20} />
-                      <div className="flex items-center justify-between mt-1">
-                        <div className="text-xs text-gray-500 dark:text-gray-400">
-                          {reply.author} - {reply.date}
-                        </div>
-                        <CommentActions
-                          id={reply.id}
-                          likes={reply.likes}
-                          isLiked={likedComments.includes(reply.id)}
-                          userId={reply.user_id}
-                          currentUserId={currentUserId}
-                          onLike={handleLikeComment}
-                          onDelete={handleDeleteComment}
-                        />
-                      </div>
-                    </div>
+                    <CommentItem
+                      key={reply.id}
+                      comment={reply}
+                      isExpanded={expandedComments.includes(reply.id)}
+                      onToggleExpand={() => toggleCommentExpansion(reply.id)}
+                      currentUserId={currentUserId}
+                      isLiked={likedComments.includes(reply.id)}
+                      onLike={handleLikeComment}
+                      onReply={() => {}}
+                      onDelete={async (id) => {
+                        const { error } = await supabase
+                          .from('forum_comments')
+                          .delete()
+                          .eq('id', id);
+                        if (!error) {
+                          window.location.reload();
+                        }
+                      }}
+                      replyingTo={null}
+                      replyContent=""
+                      onReplyContentChange={() => {}}
+                      onSubmitReply={() => {}}
+                    />
                   ))}
                 </div>
               )}
-            </div>
+            </React.Fragment>
           ))}
         </div>
       )}

@@ -1,15 +1,26 @@
 import { useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Menu, X } from "lucide-react";
 import { UserMenu } from "./UserMenu";
 import { ThemeToggle } from "../theme/ThemeToggle";
+import { LanguageToggle } from "../language/LanguageToggle";
 import { supabase } from "@/integrations/supabase/client";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { NavLinks } from "./NavLinks";
+import { MobileNavLinks } from "./MobileNavLinks";
+import { DashboardMenu } from "./DashboardMenu";
 
 export function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isHovering, setIsHovering] = useState(false);
   const navigate = useNavigate();
+  const { t } = useLanguage();
+  const location = useLocation();
+
+  const isDashboard = location.pathname === '/dashboard';
+  const isIndex = location.pathname === '/';
 
   useEffect(() => {
     // Check initial auth state
@@ -36,7 +47,7 @@ export function Navbar() {
   };
 
   return (
-    <nav className="bg-white shadow-sm dark:bg-gray-900 transition-colors">
+    <nav className="bg-white shadow-sm dark:bg-gray-900 transition-colors relative z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16">
           <div className="flex">
@@ -47,29 +58,22 @@ export function Navbar() {
 
           {/* Desktop Menu */}
           <div className="hidden sm:flex sm:items-center sm:space-x-4">
-            <Link to="/news">
-              <Button variant="ghost">Berita</Button>
-            </Link>
-            <Link to="/about">
-              <Button variant="ghost">About</Button>
-            </Link>
-            <ThemeToggle />
+            {isAuthenticated && <DashboardMenu isHovering={isHovering} setIsHovering={setIsHovering} />}
+            <NavLinks isAuthenticated={isAuthenticated} isDashboard={isDashboard} isIndex={isIndex} />
             {isAuthenticated ? (
               <UserMenu />
             ) : (
-              <>
-                <Link to="/auth/login">
-                  <Button variant="ghost">Sign In</Button>
-                </Link>
-                <Link to="/auth/register">
-                  <Button variant="ghost">Sign Up</Button>
-                </Link>
-              </>
+              <Link to="/auth/login">
+                <Button variant="ghost">{t('nav.signin')}</Button>
+              </Link>
             )}
+            <LanguageToggle />
+            <ThemeToggle />
           </div>
 
-          {/* Mobile Menu Button */}
-          <div className="flex items-center sm:hidden">
+          {/* Mobile Menu Button and Icons */}
+          <div className="flex items-center space-x-2 sm:hidden">
+            <LanguageToggle />
             <ThemeToggle />
             <Button
               variant="ghost"
@@ -87,40 +91,19 @@ export function Navbar() {
       {isOpen && (
         <div className="sm:hidden">
           <div className="pt-2 pb-3 space-y-1">
-            <Link
-              to="/news"
-              className="block px-3 py-2 text-base font-medium text-gray-700 hover:bg-gray-50 dark:text-gray-200 dark:hover:bg-gray-800"
-            >
-              Berita
-            </Link>
-            <Link
-              to="/about"
-              className="block px-3 py-2 text-base font-medium text-gray-700 hover:bg-gray-50 dark:text-gray-200 dark:hover:bg-gray-800"
-            >
-              About
-            </Link>
-            {isAuthenticated ? (
-              <button
-                onClick={() => supabase.auth.signOut()}
-                className="block w-full text-left px-3 py-2 text-base font-medium text-gray-700 hover:bg-gray-50 dark:text-gray-200 dark:hover:bg-gray-800"
+            {isAuthenticated && (
+              <div className="px-4 py-3 border-b border-gray-200 dark:border-gray-700">
+                <UserMenu isMobile={true} />
+              </div>
+            )}
+            <MobileNavLinks isAuthenticated={isAuthenticated} isDashboard={isDashboard} isIndex={isIndex} />
+            {!isAuthenticated && (
+              <Link
+                to="/auth/login"
+                className="block px-6 py-2 text-base font-medium text-gray-700 hover:bg-gray-50 dark:text-gray-200 dark:hover:bg-gray-800"
               >
-                Sign Out
-              </button>
-            ) : (
-              <>
-                <Link
-                  to="/auth/login"
-                  className="block px-3 py-2 text-base font-medium text-gray-700 hover:bg-gray-50 dark:text-gray-200 dark:hover:bg-gray-800"
-                >
-                  Sign In
-                </Link>
-                <Link
-                  to="/auth/register"
-                  className="block px-3 py-2 text-base font-medium text-gray-700 hover:bg-gray-50 dark:text-gray-200 dark:hover:bg-gray-800"
-                >
-                  Sign Up
-                </Link>
-              </>
+                {t('nav.signin')}
+              </Link>
             )}
           </div>
         </div>

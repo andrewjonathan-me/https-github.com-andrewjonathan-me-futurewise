@@ -1,11 +1,12 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Loader2 } from "lucide-react";
 import { EmailField, PasswordField } from "./FormFields";
 import { getAuthErrorMessage } from "@/utils/authErrors";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 export function LoginForm() {
   const [email, setEmail] = useState("");
@@ -14,6 +15,7 @@ export function LoginForm() {
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { t } = useLanguage();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -83,15 +85,25 @@ export function LoginForm() {
         error={fieldErrors.email}
       />
       
-      <PasswordField
-        value={password}
-        onChange={setPassword}
-        error={fieldErrors.password}
-      />
+      <div className="space-y-2">
+        <PasswordField
+          value={password}
+          onChange={setPassword}
+          error={fieldErrors.password}
+        />
+        <div className="text-sm text-right">
+          <Link 
+            to="/auth/forgot-password" 
+            className="text-primary hover:text-primary-600 dark:text-primary-400 dark:hover:text-primary-300"
+          >
+            {t("auth.forgot.password")}
+          </Link>
+        </div>
+      </div>
 
       <Button type="submit" className="w-full" disabled={loading}>
         {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-        Sign In
+        {t("auth.signin.button")}
       </Button>
     </form>
   );

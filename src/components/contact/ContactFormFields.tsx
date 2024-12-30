@@ -2,6 +2,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
+import { useLanguage } from "@/contexts/LanguageContext";
 import {
   Select,
   SelectContent,
@@ -28,10 +29,16 @@ export function ContactFormFields({
   setFormData,
   categories,
 }: ContactFormFieldsProps) {
+  const { t } = useLanguage();
+
+  const getCategoryTranslationKey = (category: string) => {
+    return `contact.form.category.${category.toLowerCase().replace(/ /g, '')}`;
+  };
+
   return (
     <>
       <div className="space-y-2">
-        <Label htmlFor="name" className="dark:text-gray-200">Nama</Label>
+        <Label htmlFor="name" className="dark:text-gray-200">{t("contact.form.name")}</Label>
         <Input
           id="name"
           value={formData.name}
@@ -56,7 +63,7 @@ export function ContactFormFields({
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="phone">Nomor Telepon (Opsional)</Label>
+        <Label htmlFor="phone">{t("contact.form.phone")}</Label>
         <Input
           id="phone"
           type="tel"
@@ -70,19 +77,19 @@ export function ContactFormFields({
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="category">Kategori</Label>
+        <Label htmlFor="category">{t("contact.form.category")}</Label>
         <Select
           value={formData.category}
           onValueChange={(value) => setFormData({ ...formData, category: value })}
           required
         >
           <SelectTrigger>
-            <SelectValue placeholder="Pilih kategori" />
+            <SelectValue placeholder={t("contact.form.category.placeholder")} />
           </SelectTrigger>
           <SelectContent>
             {categories.map((category) => (
               <SelectItem key={category} value={category}>
-                {category}
+                {t(getCategoryTranslationKey(category))}
               </SelectItem>
             ))}
           </SelectContent>
@@ -90,7 +97,7 @@ export function ContactFormFields({
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="message">Pesan (Maksimal 300 karakter)</Label>
+        <Label htmlFor="message">{t("contact.form.message")}</Label>
         <Textarea
           id="message"
           value={formData.message}
@@ -100,7 +107,7 @@ export function ContactFormFields({
           required
         />
         <p className="text-sm text-gray-500">
-          {formData.message.length}/300 karakter
+          {formData.message.length}/300 {t("contact.form.characters")}
         </p>
       </div>
 
@@ -117,7 +124,7 @@ export function ContactFormFields({
           htmlFor="consent"
           className="text-sm text-gray-600 dark:text-gray-300 leading-tight"
         >
-          Dengan mengisi formulir ini, saya setuju bahwa data dan/atau informasi saya dapat digunakan oleh FutureWise atau pihak yang ditunjuk untuk menindaklanjuti keluhan/tanggapan saya, termasuk disimpan atau dihubungi jika diperlukan.
+          {t("contact.form.consent")}
         </label>
       </div>
     </>

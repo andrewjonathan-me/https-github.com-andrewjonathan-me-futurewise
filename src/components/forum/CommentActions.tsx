@@ -1,6 +1,7 @@
 import React from 'react';
 import { Button } from "@/components/ui/button";
 import { Heart, Reply, Trash2 } from "lucide-react";
+import { useLikeInteraction } from "@/hooks/forum/useLikeInteraction";
 
 interface CommentActionsProps {
   id: string;
@@ -8,7 +9,7 @@ interface CommentActionsProps {
   isLiked: boolean;
   userId?: string;
   currentUserId: string | null;
-  onLike: (id: string) => void;
+  onLike?: (commentId: string) => void;  // Made optional
   onReply?: () => void;
   onDelete: (id: string) => void;
 }
@@ -23,16 +24,27 @@ const CommentActions: React.FC<CommentActionsProps> = ({
   onReply,
   onDelete,
 }) => {
+  const { isLiked: currentIsLiked, likeCount, handleLike } = useLikeInteraction({
+    initialLikes: likes,
+    initialIsLiked: isLiked,
+    postId: id
+  });
+
+  const handleLikeClick = () => {
+    handleLike();
+    onLike?.(id);
+  };
+
   return (
     <div className="flex items-center gap-2">
       <Button
         variant="ghost"
         size="sm"
-        className={`flex items-center gap-1 ${isLiked ? "text-red-500" : ""}`}
-        onClick={() => onLike(id)}
+        className={`flex items-center gap-1 ${currentIsLiked ? "text-red-500" : ""}`}
+        onClick={handleLikeClick}
       >
-        <Heart className={`w-4 h-4 ${isLiked ? "fill-current" : ""}`} />
-        <span>{likes + (isLiked ? 1 : 0)}</span>
+        <Heart className={`w-4 h-4 ${currentIsLiked ? "fill-current" : ""}`} />
+        <span>{likeCount}</span>
       </Button>
       {onReply && (
         <Button variant="ghost" size="sm" onClick={onReply}>

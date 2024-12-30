@@ -4,6 +4,10 @@ import { Tag } from "lucide-react";
 import Comments from './Comments';
 import AttachmentPreview from './AttachmentPreview';
 import TruncatedContent from './TruncatedContent';
+import { useLanguage } from "@/contexts/LanguageContext";
+import { categoryLanguageMap } from "@/translations/sections/forumCategories";
+import LikeButton from './LikeButton';
+import { useCurrentUser } from '@/hooks/useCurrentUser';
 
 interface PostCardProps {
   post: {
@@ -31,15 +35,34 @@ const PostCard: React.FC<PostCardProps> = ({
   isExpanded,
   onToggleExpand,
 }) => {
+  const { t, language } = useLanguage();
+  const currentUserId = useCurrentUser();
+
+  // Get the translated category based on the current language
+  const translatedCategory = language === 'en' ? 
+    post.category : // If English, use the original category
+    Object.entries(categoryLanguageMap).find(
+      ([_, englishValue]) => englishValue === post.category
+    )?.[0] || post.category; // If Indonesian, find the matching Indonesian key
+
   return (
     <Card className="hover:shadow-md transition-shadow dark:bg-gray-800">
       <CardHeader>
         <div className="flex items-center justify-between">
           <CardTitle className="text-xl dark:text-white">{post.title}</CardTitle>
-          <span className="text-sm px-2 py-1 bg-gray-100 dark:bg-gray-700 rounded dark:text-gray-200">
-            <Tag className="w-4 h-4 inline mr-1" />
-            {post.category}
-          </span>
+          <div className="flex items-center gap-4">
+            <LikeButton
+              postId={post.id}
+              likes={post.likes}
+              isLiked={post.isLiked || false}
+              onToggleLike={onToggleLike}
+              disabled={!currentUserId}
+            />
+            <span className="text-sm px-2 py-1 bg-gray-100 dark:bg-gray-700 rounded dark:text-gray-200">
+              <Tag className="w-4 h-4 inline mr-1" />
+              {t("tag.category")}: {translatedCategory}
+            </span>
+          </div>
         </div>
         <CardDescription className="flex items-center gap-2 dark:text-gray-400">
           <span>{post.author}</span>
@@ -53,6 +76,8 @@ const PostCard: React.FC<PostCardProps> = ({
             maxWords={20}
             isExpanded={isExpanded}
             onToggle={() => onToggleExpand(post.id)}
+            readMoreText={t("postCard.readMore")}
+            showLessText={t("postCard.showLess")}
           />
         </div>
         

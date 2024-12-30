@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { supabase } from "@/integrations/supabase/client";
 import { ContactFormFields } from "./ContactFormFields";
 import { FormData, FormErrors } from "./types";
@@ -8,6 +9,7 @@ import { validateName, validatePhone } from "./validation";
 
 export function ContactForm() {
   const { toast } = useToast();
+  const { t } = useLanguage();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
   const [formData, setFormData] = useState<FormData>({
@@ -88,8 +90,8 @@ export function ContactForm() {
       }
 
       toast({
-        title: "Terima kasih!",
-        description: "Pesan Anda telah berhasil dikirim. Kami akan menghubungi Anda segera.",
+        title: t("contact.form.success"),
+        description: t("contact.form.success.description"),
       });
 
       setFormData({
@@ -104,8 +106,8 @@ export function ContactForm() {
     } catch (error) {
       console.error("Error submitting form:", error);
       toast({
-        title: "Error",
-        description: "Terjadi kesalahan saat mengirim pesan. Silakan coba lagi.",
+        title: t("contact.form.error"),
+        description: t("contact.form.error.description"),
         variant: "destructive",
       });
     } finally {
@@ -125,7 +127,7 @@ export function ContactForm() {
       />
 
       <Button type="submit" disabled={isSubmitting || !!errors.name || !!errors.phone}>
-        {isSubmitting ? "Mengirim..." : "Kirim Pesan"}
+        {isSubmitting ? t("contact.form.submitting") : t("contact.form.submit")}
       </Button>
     </form>
   );

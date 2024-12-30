@@ -8,6 +8,7 @@ import { Loader2 } from "lucide-react";
 import { EmailField, PasswordField, UsernameField } from "./FormFields";
 import { validatePassword } from "@/utils/passwordValidation";
 import { LoginForm } from "./LoginForm";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface AuthFormProps {
   type: "login" | "register";
@@ -21,6 +22,7 @@ export function AuthForm({ type }: AuthFormProps) {
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { t } = useLanguage();
 
   const handleGoogleAuth = async () => {
     try {
@@ -114,11 +116,11 @@ export function AuthForm({ type }: AuthFormProps) {
           </div>
           <div className="relative flex justify-center text-sm">
             <span className="px-2 bg-white dark:bg-gray-900 text-gray-500 dark:text-gray-400">
-              Or continue with
+              {t("auth.continue.with")}
             </span>
           </div>
         </div>
-        <GoogleButton onClick={handleGoogleAuth} disabled={loading} />
+        <GoogleButton onClick={handleGoogleAuth} disabled={loading} text={t("auth.signin.with")} />
       </div>
     );
   }
@@ -146,7 +148,7 @@ export function AuthForm({ type }: AuthFormProps) {
 
       <Button type="submit" className="w-full" disabled={loading}>
         {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-        Sign Up
+        {t("auth.signup.button")}
       </Button>
 
       <div className="relative my-4">
@@ -155,12 +157,12 @@ export function AuthForm({ type }: AuthFormProps) {
         </div>
         <div className="relative flex justify-center text-sm">
           <span className="px-2 bg-white dark:bg-gray-900 text-gray-500 dark:text-gray-400">
-            Or continue with
+            {t("auth.continue.with")}
           </span>
         </div>
       </div>
 
-      <GoogleButton onClick={handleGoogleAuth} disabled={loading} />
+      <GoogleButton onClick={handleGoogleAuth} disabled={loading} text={t("auth.signin.with")} />
     </form>
   );
 }

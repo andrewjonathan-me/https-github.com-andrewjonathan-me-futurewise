@@ -11,20 +11,29 @@ import {
 import { User } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { useLanguage } from "@/contexts/LanguageContext";
 
-export function UserMenu() {
+interface UserMenuProps {
+  isMobile?: boolean;
+}
+
+export function UserMenu({ isMobile = false }: UserMenuProps) {
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+  const [username, setUsername] = useState<string | null>(null);
+  const [email, setEmail] = useState<string | null>(null);
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { t } = useLanguage();
 
   useEffect(() => {
     const fetchProfile = async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (user) {
+        setEmail(user.email);
         console.log("Fetching profile for user:", user.id);
         const { data: profile, error } = await supabase
           .from("profiles")
-          .select("avatar_url")
+          .select("avatar_url, username")
           .eq("id", user.id)
           .single();
 
@@ -33,6 +42,7 @@ export function UserMenu() {
         } else if (profile) {
           console.log("Profile fetched:", profile);
           setAvatarUrl(profile.avatar_url);
+          setUsername(profile.username);
         }
       }
     };
@@ -85,6 +95,40 @@ export function UserMenu() {
     }
   };
 
+  if (isMobile) {
+    return (
+      <div className="flex flex-col items-center space-y-2">
+        <Avatar className="h-16 w-16">
+          <AvatarImage 
+            src={avatarUrl || "https://images.unsplash.com/photo-1649972904349-6e44c42644a7"} 
+            alt="Profile picture" 
+          />
+          <AvatarFallback>
+            <User className="h-8 w-8" />
+          </AvatarFallback>
+        </Avatar>
+        <div className="text-center">
+          <p className="font-medium text-gray-900 dark:text-gray-100">{username || email}</p>
+          {username && <p className="text-sm text-gray-500 dark:text-gray-400">{email}</p>}
+        </div>
+        <div className="w-full space-y-1 pt-2">
+          <Link 
+            to="/profile" 
+            className="block w-full px-3 py-2 text-left text-base font-medium text-gray-700 hover:bg-gray-50 dark:text-gray-200 dark:hover:bg-gray-800"
+          >
+            {t('profile.edit')}
+          </Link>
+          <button
+            onClick={handleSignOut}
+            className="block w-full px-3 py-2 text-left text-base font-medium text-gray-700 hover:bg-gray-50 dark:text-gray-200 dark:hover:bg-gray-800"
+          >
+            {t('profile.signout')}
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -102,10 +146,10 @@ export function UserMenu() {
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
         <DropdownMenuItem asChild>
-          <Link to="/profile">Profile</Link>
+          <Link to="/profile">{t('profile.title')}</Link>
         </DropdownMenuItem>
         <DropdownMenuItem onClick={handleSignOut}>
-          Sign out
+          {t('profile.signout')}
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
