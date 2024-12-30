@@ -178,6 +178,7 @@ export type Database = {
           created_at: string
           id: string
           role: string | null
+          subscription_plan: string | null
           updated_at: string
           username: string | null
         }
@@ -186,6 +187,7 @@ export type Database = {
           created_at?: string
           id: string
           role?: string | null
+          subscription_plan?: string | null
           updated_at?: string
           username?: string | null
         }
@@ -194,6 +196,7 @@ export type Database = {
           created_at?: string
           id?: string
           role?: string | null
+          subscription_plan?: string | null
           updated_at?: string
           username?: string | null
         }
@@ -276,7 +279,7 @@ export type Database = {
       }
       user_reactions: {
         Row: {
-          comment_id: string
+          comment_id: string | null
           created_at: string
           id: string
           post_id: string | null
@@ -284,7 +287,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
-          comment_id: string
+          comment_id?: string | null
           created_at?: string
           id?: string
           post_id?: string | null
@@ -292,7 +295,7 @@ export type Database = {
           user_id: string
         }
         Update: {
-          comment_id?: string
+          comment_id?: string | null
           created_at?: string
           id?: string
           post_id?: string | null
